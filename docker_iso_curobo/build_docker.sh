@@ -17,7 +17,7 @@
 # Check architecture to build:
 
 image_tag="x86"
-isaac_sim_version=""
+isaac_sim_version="4.5.0"
 input_arg="$1"
 
 if [ -z "$input_arg" ]; then
@@ -32,11 +32,11 @@ if [ -z "$input_arg" ]; then
     fi
 fi
 
-if [ "$input_arg" == "isaac_sim_4.0.0" ]; then
+if [ "$input_arg" == "isaac_sim_4.5.0" ]; then
     echo "Building Isaac Sim headless docker"
     dockerfile="isaac_sim.dockerfile"
-    image_tag="isaac_sim_4.0.0"
-    isaac_sim_version="4.0.0"
+    image_tag="isaac_sim_4.5.0"
+    isaac_sim_version="4.5.0"
 elif [ "$input_arg" == "x86" ]; then
     echo "Building for X86 Architecture"
     dockerfile="x86.dockerfile"
@@ -46,7 +46,7 @@ elif [ "$input_arg" = "aarch64" ]; then
     dockerfile="aarch64.dockerfile"
     image_tag="aarch64"
 else
-    echo "Unknown Argument. Please pass one of [x86, aarch64, isaac_sim_2022.2.1, isaac_sim_2023.1.0]"
+    echo "Unknown Argument. Please pass one of [x86, aarch64, isaac_sim_4.5.0]"
     exit
 fi
 

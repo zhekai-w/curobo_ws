@@ -9,20 +9,23 @@
 ## its affiliates is strictly prohibited.
 ##
 ARG DEBIAN_FRONTEND=noninteractive
-ARG BASE_DIST=ubuntu20.04
-ARG CUDA_VERSION=11.4.2
-ARG ISAAC_SIM_VERSION=4.0.0
+ARG BASE_DIST=ubuntu22.04
+ARG CUDA_VERSION=11.8.0
+ARG ISAAC_SIM_VERSION=4.5.0
+# ARG CUDA_VERSION=11.4.2
+# ARG ISAAC_SIM_VERSION=4.0.0
 
 
 FROM nvcr.io/nvidia/isaac-sim:${ISAAC_SIM_VERSION} AS isaac-sim
 
-FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-devel-${BASE_DIST}
+FROM nvidia/cuda:${CUDA_VERSION}-devel-${BASE_DIST}
+# FROM nvcr.io/nvidia/cudagl:${CUDA_VERSION}-devel-${BASE_DIST}
 
 
 # this does not work for 2022.2.1
 #$FROM nvcr.io/nvidia/cuda:${CUDA_VERSION}-cudnn8-devel-${BASE_DIST}
 
-LABEL maintainer "User Name"
+LABEL maintainer="User Name"
 
 ARG VULKAN_SDK_VERSION=1.3.224.1
 
@@ -34,13 +37,13 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 
 # add GL if using a cuda docker instead of cudagl:
-#RUN apt-get update && apt-get install -y --no-install-recommends \
-#        pkg-config \
-#        libglvnd-dev \
-#        libgl1-mesa-dev \
-#        libegl1-mesa-dev \
-#        libgles2-mesa-dev && \
-#    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libglvnd-dev \
+    libgl1-mesa-dev \
+    libegl1-mesa-dev \
+    libgles2-mesa-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set timezone info
 RUN apt-get update && apt-get install -y \
@@ -89,16 +92,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype-dev \
     libfontconfig1 \
     openssl \
-    libssl1.1 \
+    libssl3 \
     wget \
-    vulkan-utils \
+    vulkan-tools \
     && apt-get -y autoremove \
     && apt-get clean autoclean \
     && rm -rf /var/lib/apt/lists/*
 
 
 
-# # Download the Vulkan SDK and extract the headers, loaders, layers and binary utilities
+# Download the Vulkan SDK and extract the headers, loaders, layers and binary utilities
 # RUN wget -q --show-progress \
 #     --progress=bar:force:noscroll \
 #     https://sdk.lunarg.com/sdk/download/${VULKAN_SDK_VERSION}/linux/vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.gz \
@@ -136,6 +139,7 @@ RUN VULKAN_SDK_VERSION=$(curl -s https://vulkan.lunarg.com/sdk/latest/linux.txt)
     && ldconfig \
     && rm /tmp/vulkan_sdk.tar.xz && rm -rf /opt/vulkan
 
+
 # Setup the required capabilities for the container runtime
 ENV NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=all
 
@@ -151,11 +155,11 @@ EXPOSE 47995-48012/udp \
     8899/tcp \
     8891/tcp
 
-ENV OMNI_SERVER http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/${ISAAC_SIM_VERSION}
+ENV OMNI_SERVER=http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/${ISAAC_SIM_VERSION}
 # ENV OMNI_SERVER omniverse://localhost/NVIDIA/Assets/Isaac/2022.1
 # ENV OMNI_USER admin
 # ENV OMNI_PASS admin
-ENV MIN_DRIVER_VERSION 525.60.11
+ENV MIN_DRIVER_VERSION=525.60.11
 
 # Copy Isaac Sim files
 COPY --from=isaac-sim /isaac-sim /isaac-sim
@@ -261,10 +265,10 @@ RUN cd /pkgs/glog && \
     -DWITH_GFLAGS=OFF -DWITH_GTEST=OFF -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=${USE_CX11_ABI} \
     && make -j8 && make install
 
-# RUN cd /pkgs && git clone https://github.com/nvlabs/nvblox_torch.git && \
-#     cd /pkgs/nvblox_torch && \
-#     sh install_isaac_sim.sh $($omni_python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)') && \
-#     $omni_python -m pip install -e .
+RUN cd /pkgs && git clone https://github.com/NVlabs/nvblox_torch.git && \
+    cd /pkgs/nvblox_torch && \
+    sh install_isaac_sim.sh $($omni_python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)') && \
+    $omni_python -m pip install -e .
 
 # install realsense for nvblox demos:
 RUN $omni_python -m pip install pyrealsense2 opencv-python transforms3d
