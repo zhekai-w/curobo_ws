@@ -1,11 +1,11 @@
 # install python dep
-pyrealsense2
-ultralytics
+# pyrealsense2
+# ultralytics
 # opencv-python
 # this already include opencv-python
-opencv-contrib-python==4.11.0.86
+# opencv-contrib-python==4.11.0.86
 # Azure Kinect DK
-pyk4a
+# pyk4a
 
 # for tensorrt conversion
 onnx==1.17.0
@@ -14,6 +14,6 @@ onnxruntime-gpu
 tensorrt==10.12.0.36
 
 # numpy 1.x is require for cv_bridge since it was compiled with it
-numpy==1.26.4
+# numpy==1.26.4
 
-python-lsp-server
+# python-lsp-server

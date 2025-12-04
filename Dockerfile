@@ -137,6 +137,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     vulkan-tools \
     curl \
     tcl \
+    unzip \
     && apt-get -y autoremove \
     && apt-get clean autoclean \
     && rm -rf /var/lib/apt/lists/*
@@ -227,6 +228,10 @@ RUN mkdir pkgs && cd pkgs && git clone https://github.com/NVlabs/curobo.git
 RUN $omni_python -m pip install ninja wheel tomli
 
 RUN cd pkgs/curobo && $omni_python -m pip install .[dev] --no-build-isolation
+
+# Unzip nvblox scene assets
+RUN unzip /home/${USER}/.local/lib/python3.10/site-packages/curobo/content/assets/scene/nvblox/srl_ur10_bins.zip \
+    -d /home/${USER}/.local/lib/python3.10/site-packages/curobo/content/assets/scene/nvblox/
 
 WORKDIR /home/"${USER}"/work/pkgs/curobo
 
